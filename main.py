@@ -642,8 +642,26 @@ def balance(message):
 
     data = cursor.fetchone()
 
-    balance = data[0]
+if not data:
 
+    cursor.execute(
+        \"\"\"
+        INSERT INTO users (
+            user_id
+        )
+        VALUES (?)
+        \"\"\",
+        (user_id,)
+    )
+
+    conn.commit()
+
+    balance = 0
+    total_otp = 0
+
+else:
+
+    balance = data[0]
     total_otp = data[1]
 
     markup = types.InlineKeyboardMarkup()
