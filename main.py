@@ -58,7 +58,7 @@ def home():
 
 # ================= DATABASE =================
 
-conn = sqlite3.connect("database.db", check_same_thread=False)
+conn = sqlite3.connect("database.db", check_same_thread=False, isolation_level=None)
 
 cursor = conn.cursor()
 
