@@ -1,4 +1,4 @@
-
+import telebot
 from telebot import types
 import requests
 import sqlite3
@@ -6,9 +6,9 @@ import threading
 import time
 import phonenumbers
 from phonenumbers import geocoder, region_code_for_number
-import logging
 from flask import Flask
 import os
+import logging
 #=================Add Flag Function=========
 def get_flag(country_code):
     if not country_code:
@@ -453,8 +453,7 @@ def auto_check_otp(chat_id, number_id, range_id, number):
 
                 bot.send_message(
                     f"@{FORCE_GROUP}",
-                    f"""
-🔥 {bot.get_me().first_name}
+                    f🔥 {bot.get_me().first_name}
 
 📞 Number: {number}
 
