@@ -799,10 +799,24 @@ def support(message):
 
 print("BOT RUNNING...")
 
+logging.basicConfig(level=logging.INFO)
+
 if __name__ == "__main__":
 
     def run_bot():
-        bot.infinity_polling(skip_pending=True)
+
+        while True:
+
+            try:
+                bot.infinity_polling(
+                    timeout=30,
+                    long_polling_timeout=30,
+                    skip_pending=True
+                )
+
+            except Exception as e:
+                print("Polling Error:", e)
+                time.sleep(5)
 
     threading.Thread(target=run_bot).start()
 
