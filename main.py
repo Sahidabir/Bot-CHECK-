@@ -452,8 +452,9 @@ def auto_check_otp(chat_id, number_id, range_id, number):
                 )
 
                 bot.send_message(
-                    f"@{FORCE_GROUP}",
-                    f🔥 {bot.get_me().first_name}
+    f"@{FORCE_GROUP}",
+    f"""
+🔥 {bot.get_me().first_name}
 
 📞 Number: {number}
 
@@ -462,7 +463,7 @@ def auto_check_otp(chat_id, number_id, range_id, number):
 📋 OTP: {otp}
 
 💰 Earned: {OTP_PRICE} TK
-                    """
+    """
                 )
 
                 return
