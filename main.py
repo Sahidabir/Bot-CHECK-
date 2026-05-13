@@ -599,11 +599,24 @@ def profile(message):
 
     data = cursor.fetchone()
 
-    balance = data[0]
+    if data is None:
 
-    total_otp = data[1]
+        cursor.execute("""
+        INSERT INTO users (user_id)
+        VALUES (?)
+        """, (user_id,))
 
-    referral_count = data[2]
+        conn.commit()
+
+        balance = 0
+        total_otp = 0
+        referral_count = 0
+
+    else:
+
+        balance = data[0]
+        total_otp = data[1]
+        referral_count = data[2]
 
     user = message.from_user
 
@@ -625,9 +638,9 @@ def profile(message):
 👥 REFERRALS: {referral_count}
         """
     )
+#===================BALANCE = =================
 
-# ================= BALANCE =================
-@bot.message_handler(func=lambda m: m.text == "💰 Balance")
+@bot.messagege_handler(func=lambda m: m.text == "💰 Balance")
 def balance(message):
 
     user_id = message.from_user.id
