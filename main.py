@@ -641,6 +641,7 @@ def profile(message):
 #===================BALANCE = =================
 
 @bot.message_handler(func=lambda m: m.text == "💰 Balance")
+def balance(message):
 
     user_id = message.from_user.id
 
@@ -692,6 +693,7 @@ def profile(message):
         """,
         reply_markup=markup
     )
+
 
 #==================WITHDRAW = =================
 
