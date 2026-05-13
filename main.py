@@ -627,7 +627,6 @@ def profile(message):
     )
 
 # ================= BALANCE =================
-
 @bot.message_handler(func=lambda m: m.text == "💰 Balance")
 def balance(message):
 
@@ -642,27 +641,22 @@ def balance(message):
 
     data = cursor.fetchone()
 
-if not data:
+    if data is None:
 
-    cursor.execute(
-        \"\"\"
-        INSERT INTO users (
-            user_id
-        )
+        cursor.execute("""
+        INSERT INTO users (user_id)
         VALUES (?)
-        \"\"\",
-        (user_id,)
-    )
+        """, (user_id,))
 
-    conn.commit()
+        conn.commit()
 
-    balance = 0
-    total_otp = 0
+        balance = 0
+        total_otp = 0
 
-else:
+    else:
 
-    balance = data[0]
-    total_otp = data[1]
+        balance = data[0]
+        total_otp = data[1]
 
     markup = types.InlineKeyboardMarkup()
 
@@ -687,7 +681,7 @@ else:
         reply_markup=markup
     )
 
-# ================= WITHDRAW =================
+#==================WITHDRAW = =================
 
 @bot.callback_query_handler(func=lambda c: c.data == "withdraw")
 def withdraw(call):
