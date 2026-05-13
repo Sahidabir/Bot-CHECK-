@@ -795,31 +795,25 @@ def support(message):
         reply_markup=markup
     )
 
+
 # ================= RUN BOT =================
 
 print("BOT RUNNING...")
 
-logging.basicConfig(level=logging.INFO)
+def start_bot():
+    while True:
+        try:
+            bot.infinity_polling(
+                timeout=30,
+                long_polling_timeout=30,
+                skip_pending=True
+            )
+        except Exception as e:
+            print(e)
+            time.sleep(5)
 
-if __name__ == "__main__":
+threading.Thread(target=start_bot).start()
 
-    def run_bot():
+port = int(os.environ.get("PORT", 10000))
 
-        while True:
-
-            try:
-                bot.infinity_polling(
-                    timeout=30,
-                    long_polling_timeout=30,
-                    skip_pending=True
-                )
-
-            except Exception as e:
-                print("Polling Error:", e)
-                time.sleep(5)
-
-    threading.Thread(target=run_bot).start()
-
-    port = int(os.environ.get("PORT", 10000))
-
-    app.run(host="0.0.0.0", port=port)
+app.run(host="0.0.0.0", port=port)
