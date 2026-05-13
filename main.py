@@ -1,4 +1,4 @@
-Trueebot
+
 from telebot import types
 import requests
 import sqlite3
