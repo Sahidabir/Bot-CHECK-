@@ -640,7 +640,7 @@ def profile(message):
     )
 #===================BALANCE = =================
 
-@bot.messagege_handler(func=lambda m: m.text == "💰 Balance")
+@bot.message_handler(func=lambda m: m.text == "💰 Balance")
 def balance(message):
 
     user_id = message.from_user.id
