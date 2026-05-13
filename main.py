@@ -1,4 +1,4 @@
-import telebot
+Trueebot
 from telebot import types
 import requests
 import sqlite3
@@ -46,7 +46,7 @@ WITHDRAW_FEE = 10
 
 # ================= BOT =================
 
-bot = telebot.TeleBot(BOT_TOKEN, threaded=True)
+bot = telebot.TeleBot(BOT_TOKEN, threaded=False)
 
 # ================= WEB SERVER =================
 
