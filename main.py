@@ -361,6 +361,8 @@ def get_number(message):
             message.chat.id,
             f"❌ ERROR\n\n{e}"
         )
+
+
 # ================= AUTO OTP =================
 
 def auto_check_otp(chat_id, number_id, range_id, number):
@@ -451,18 +453,20 @@ def auto_check_otp(chat_id, number_id, range_id, number):
                     reply_markup=markup
                 )
 
+                # ================= GROUP POST =================
+
                 group_markup = types.InlineKeyboardMarkup()
 
-group_markup.row(
-    types.InlineKeyboardButton(
-        "📞 Get Number For This Range",
-        url=f"https://t.me/{bot.get_me().username}?start=range_{range_id}"
-    )
-)
+                group_markup.row(
+                    types.InlineKeyboardButton(
+                        "📞 Get Number For This Range",
+                        url=f"https://t.me/{bot.get_me().username}?start=range_{range_id}"
+                    )
+                )
 
-bot.send_message(
-    f"@{FORCE_GROUP}",
-    f"""
+                bot.send_message(
+                    f"@{FORCE_GROUP}",
+                    f"""
 🔥 {bot.get_me().first_name}
 
 📞 Number: {number}
@@ -472,9 +476,9 @@ bot.send_message(
 📋 OTP: {otp}
 
 💰 Earned: {OTP_PRICE} TK
-    """,
-    reply_markup=group_markup
-)
+                    """,
+                    reply_markup=group_markup
+                )
 
                 return
 
@@ -483,65 +487,6 @@ bot.send_message(
         except Exception as e:
 
             print(e)
-
-# ================= REFRESH OTP =================
-
-@bot.callback_query_handler(func=lambda c: c.data == "refresh_otp")
-def refresh_otp(call):
-
-    user_id = call.from_user.id
-
-    cursor.execute("""
-    SELECT current_order_id
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
-
-    result = cursor.fetchone()
-
-    if not result:
-
-        bot.answer_callback_query(
-            call.id,
-            "❌ No Active Number"
-        )
-
-        return
-
-    number_id = result[0]
-
-    try:
-
-        response = requests.get(
-            BASE_URL + f"/numbers/{number_id}/sms",
-            headers=HEADERS
-        )
-
-        data = response.json()
-
-        otp = data.get("otp")
-
-        if otp:
-
-            bot.send_message(
-                call.message.chat.id,
-                f"✅ OTP\n\n`{otp}`",
-                parse_mode="Markdown"
-            )
-
-        else:
-
-            bot.answer_callback_query(
-                call.id,
-                "⌛ OTP Not Received"
-            )
-
-    except Exception as e:
-
-        bot.send_message(
-            call.message.chat.id,
-            str(e)
-        )
 
 # ================= CHANGE NUMBER =================
 
