@@ -453,7 +453,7 @@ def auto_check_otp(chat_id, number_id, range_id, number):
                     reply_markup=markup
                 )
 
-                # ================= GROUP POST =================
+# ================= GROUP POST =================
 
                 group_markup = types.InlineKeyboardMarkup()
 
