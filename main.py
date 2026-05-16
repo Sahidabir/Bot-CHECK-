@@ -453,8 +453,6 @@ def auto_check_otp(chat_id, number_id, range_id, number):
                     reply_markup=markup
                 )
 
-# ================= GROUP POST =================
-
                 group_markup = types.InlineKeyboardMarkup()
 
                 group_markup.row(
@@ -487,8 +485,7 @@ def auto_check_otp(chat_id, number_id, range_id, number):
         except Exception as e:
 
             print(e)
-
-# ================= CHANGE NUMBER =================
+# ================CHANGE NUMANGE NUMBER =================
 
 @bot.callback_query_handler(func=lambda c: c.data == "change_number")
 def change_number(call):
