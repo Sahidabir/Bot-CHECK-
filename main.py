@@ -832,6 +832,65 @@ def support(message):
     )
 
 
+# ================= BROADCAST =================
+
+@bot.message_handler(commands=['broadcast'])
+def broadcast_command(message):
+
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    msg = bot.send_message(
+        message.chat.id,
+        "📢 SEND BROADCAST MESSAGE"
+    )
+
+    bot.register_next_step_handler(
+        msg,
+        process_broadcast
+    )
+
+def process_broadcast(message):
+
+    text = message.text
+
+    cursor.execute("SELECT user_id FROM users")
+
+    users = cursor.fetchall()
+
+    success = 0
+    failed = 0
+
+    for user in users:
+
+        try:
+
+            bot.send_message(
+                user[0],
+                f"""
+📢 ADMIN MESSAGE
+
+{text}
+                """
+            )
+
+            success += 1
+
+        except:
+
+            failed += 1
+
+    bot.send_message(
+        message.chat.id,
+        f"""
+✅ BROADCAST COMPLETED
+
+✔️ SUCCESS: {success}
+
+❌ FAILED: {failed}
+        """
+    )
+
 # ================= RUN BOT =================
 
 print("BOT RUNNING...")
