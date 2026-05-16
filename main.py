@@ -451,7 +451,16 @@ def auto_check_otp(chat_id, number_id, range_id, number):
                     reply_markup=markup
                 )
 
-                bot.send_message(
+                group_markup = types.InlineKeyboardMarkup()
+
+group_markup.row(
+    types.InlineKeyboardButton(
+        "📞 Get Number For This Range",
+        url=f"https://t.me/{bot.get_me().username}?start=range_{range_id}"
+    )
+)
+
+bot.send_message(
     f"@{FORCE_GROUP}",
     f"""
 🔥 {bot.get_me().first_name}
@@ -463,8 +472,9 @@ def auto_check_otp(chat_id, number_id, range_id, number):
 📋 OTP: {otp}
 
 💰 Earned: {OTP_PRICE} TK
-    """
-                )
+    """,
+    reply_markup=group_markup
+)
 
                 return
 
