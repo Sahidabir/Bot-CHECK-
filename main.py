@@ -396,20 +396,37 @@ def auto_check_otp(chat_id, number_id, range_id, number):
 
                 conn.commit()
 
+
                 # ================= USER INFO =================
 
-                cursor.execute("""
-                    SELECT balance, total_otp, referred_by
-                    FROM users
-                    WHERE user_id = ?
-                """, (chat_id,))
+cursor.execute("""
+    SELECT balance, total_otp, referred_by
+    FROM users
+    WHERE user_id = ?
+""", (chat_id,))
 
-                info = cursor.fetchone()
+info = cursor.fetchone()
 
-                current_balance = info[0]
-                total_otp = info[1]
-                referred_by = info[2]
+# USER NOT FOUND FIX
+if not info:
 
+    cursor.execute("""
+        INSERT OR IGNORE INTO users (user_id)
+        VALUES (?)
+    """, (chat_id,))
+
+    conn.commit()
+
+    current_balance = 0
+    total_otp = 0
+    referred_by = 0
+
+else:
+
+    current_balance = info[0]
+    total_otp = info[1]
+    referred_by = info[2]
+                
                 # ================= REFERRAL BONUS =================
 
                 if total_otp == 50 and referred_by != 0:
