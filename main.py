@@ -304,64 +304,55 @@ def get_number(message):
             country_name = "Unknown"
             flag = ""
 
+        
+        
         # ================= SAVE DB =================
-        cursor.execute("""
-        UPDATE users
-        SET current_number=?,
-            current_order_id=?,
-            current_range=?
-        WHERE user_id=?
-        """, (number, number_id, range_id, user_id))
 
-        conn.commit()
+# USER EXISTS CHECK
+cursor.execute("""
+SELECT user_id
+FROM users
+WHERE user_id=?
+""", (user_id,))
 
-        markup = types.InlineKeyboardMarkup()
+exists = cursor.fetchone()
 
-        markup.row(
-            types.InlineKeyboardButton(
-                "🔄 Change Number",
-                callback_data="change_number"
-            ),
-            types.InlineKeyboardButton(
-                "♻️ Refresh OTP",
-                callback_data="refresh_otp"
-            )
-        )
+# USER NOT FOUND
+if not exists:
 
-        markup.row(
-            types.InlineKeyboardButton(
-                "👥 OTP Group",
-                url=OTP_GROUP
-            )
-        )
+    cursor.execute("""
+    INSERT INTO users (
+        user_id,
+        current_number,
+        current_order_id,
+        current_range
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        number,
+        number_id,
+        range_id
+    ))
 
-        bot.send_message(
-            message.chat.id,
-            f"""
-📞 NUMBER: `{number}`
-🆔 ID: `{number_id}`
-📶 RANGE: `{range_id}`
+else:
 
-🌍 COUNTRY: {flag} {country_name}
+    cursor.execute("""
+    UPDATE users
+    SET current_number=?,
+        current_order_id=?,
+        current_range=?
+    WHERE user_id=?
+    """, (
+        number,
+        number_id,
+        range_id,
+        user_id
+    ))
 
-💸 OTP নিয়ে পাবেন ০.৩০ টাকা
-            """,
-            parse_mode="Markdown",
-            reply_markup=markup
-        )
+conn.commit()
 
-        threading.Thread(
-            target=auto_check_otp,
-            args=(message.chat.id, number_id, range_id, number)
-        ).start()
-
-    except Exception as e:
-
-        bot.send_message(
-            message.chat.id,
-            f"❌ ERROR\n\n{e}"
-        )
-
+print("ORDER SAVED:", user_id, number_id)
 
 # ================= AUTO OTP =================
 
