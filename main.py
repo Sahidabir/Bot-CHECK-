@@ -305,47 +305,19 @@ def get_number(message):
             flag = ""
 
 # ================= SAVE DB =================
-# USER EXISTS CHECK
+
 cursor.execute("""
-SELECT user_id
-FROM users
+UPDATE users
+SET current_number=?,
+    current_order_id=?,
+    current_range=?
 WHERE user_id=?
-""", (user_id,))
-
-exists = cursor.fetchone()
-
-# USER NOT FOUND
-if not exists:
-
-    cursor.execute("""
-    INSERT INTO users (
-        user_id,
-        current_number,
-        current_order_id,
-        current_range
-    )
-    VALUES (?, ?, ?, ?)
-    """, (
-        user_id,
-        number,
-        number_id,
-        range_id
-    ))
-
-else:
-
-    cursor.execute("""
-    UPDATE users
-    SET current_number=?,
-        current_order_id=?,
-        current_range=?
-    WHERE user_id=?
-    """, (
-        number,
-        number_id,
-        range_id,
-        user_id
-    ))
+""", (
+    number,
+    number_id,
+    range_id,
+    user_id
+))
 
 conn.commit()
 
