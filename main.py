@@ -55,8 +55,8 @@ LOGIN_URL = "https://mknetworkbd.com/login.php"
 def mk_login():
 
     data = {
-        "login_id": "YOUR_EMAIL_OR_PHONE",
-        "password": "YOUR_PASSWORD"
+        "login_id": "playpoinlagbeh@gmail.com",
+        "password": "ENT0SAHID"
     }
 
     headers = {
