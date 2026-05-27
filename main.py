@@ -409,23 +409,15 @@ def get_number(message):
         )
 
         threading.Thread(
-            target=auto_check_otp,
-            args=(
-                message.chat.id,
-                number_id,
-                range_id,
-                number
-            )
-        ).start()
-        except Exception:
+    target=auto_check_otp,
+    args=(message.chat.id, number_id, range_id, number)
+).start()
+
+except Exception as e:
+
     bot.send_message(
         message.chat.id,
-        """
-❌ API OFFLINE
-
-⚠️ Number server বর্তমানে বন্ধ আছে।
-কিছুক্ষণ পরে আবার চেষ্টা করুন।
-        """
+        f"❌ ERROR\n\n{e}"
     )
 # ================= AUTO OTP =================
 
