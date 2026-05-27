@@ -44,6 +44,35 @@ MIN_WITHDRAW = 150
 
 WITHDRAW_FEE = 10
 
+# =========================
+# MK NETWORK LOGIN
+# =========================
+
+session = requests.Session()
+
+LOGIN_URL = "https://mknetworkbd.com/login.php"
+
+def mk_login():
+
+    data = {
+        "login_id": "YOUR_EMAIL_OR_PHONE",
+        "password": "YOUR_PASSWORD"
+    }
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    r = session.post(
+        LOGIN_URL,
+        data=data,
+        headers=headers
+    )
+
+    print("MK Login:", r.status_code)
+    print("Cookies:", session.cookies.get_dict())
+
+mk_login()
 # ================= BOT =================
 
 bot = telebot.TeleBot(BOT_TOKEN, threaded=False)
