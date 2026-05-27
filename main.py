@@ -418,15 +418,15 @@ def get_number(message):
             )
         ).start()
         except Exception:
-            bot.send_message(
-            message.chat.id,
-            """
+    bot.send_message(
+        message.chat.id,
+        """
 ❌ API OFFLINE
 
 ⚠️ Number server বর্তমানে বন্ধ আছে।
 কিছুক্ষণ পরে আবার চেষ্টা করুন।
-            """
-        )
+        """
+    )
 # ================= AUTO OTP =================
 
 def auto_check_otp(chat_id, number_id, range_id, number):
