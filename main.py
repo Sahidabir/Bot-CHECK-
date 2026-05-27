@@ -417,7 +417,7 @@ def get_number(message):
                 number
             )
         ).start()
-     except Exception:
+        except Exception:
 
         bot.send_message(
             message.chat.id,
