@@ -418,8 +418,7 @@ def get_number(message):
             )
         ).start()
         except Exception:
-
-        bot.send_message(
+            bot.send_message(
             message.chat.id,
             """
 ❌ API OFFLINE
