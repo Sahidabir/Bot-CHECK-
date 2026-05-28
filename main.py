@@ -620,10 +620,9 @@ def refresh_otp(call):
 
         # ================= REQUEST =================
 
-        response = requests.get(
-            BASE_URL + f"/numbers/{number_id}/sms",
-            headers=HEADERS,
-            timeout=15
+        response = session.get(
+    f"https://mknetworkbd.com/api/numbers/{number_id}/sms",
+    timeout=15
         )
 
         data = response.json()
