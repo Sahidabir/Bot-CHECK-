@@ -291,16 +291,20 @@ def get_number(message):
     try:
 
         payload = {
-            "range": range_id,
-            "format": "international"
-        }
+    "range": range_id,
+    "format": "international"
+}
 
-        response = session.post(
+response = session.post(
     "https://mknetworkbd.com/api/numbers/get",
-    json=payload
+    json=payload,
+    timeout=15
 )
 
-        data = response.json()
+print("NEW API RUNNING")
+print(response.url)
+
+data = response.json()
 
         print("GET NUMBER:", data)
 
