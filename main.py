@@ -7,7 +7,7 @@ import time
 
 # ================= CONFIG =================
 
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 API_KEY = "nxa_9f1208cee0f2cd50cdc197bd814eb95e83bc0636"
 
