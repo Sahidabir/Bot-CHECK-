@@ -4,19 +4,18 @@ import requests
 import sqlite3
 import threading
 import time
-import phonenumbers
-from phonenumbers import geocoder, region_code_for_number
-from flask import Flask
-import os
-import logging
-#=================Add Flag Function=========
-def get_flag(country_code):
-    if not country_code:
-        return ""
-    return ''.join(chr(127397 + ord(c)) for c in country_code.upper())
+
 # ================= CONFIG =================
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
+BOT_TOKEN = "YOUR_BOT_TOKEN"
+
+API_KEY = "nxa_d4ec31e0fdf5bd720279be8022ea588b4c2179e9"
+
+BASE_URL = "http://185.190.142.81/api/v1"
+
+HEADERS = {
+    "X-API-Key": API_KEY
+}
 
 OTP_GROUP = "https://t.me/otprange"
 
@@ -26,7 +25,7 @@ FORCE_CHANNEL = "gmailbuysellw2"
 
 FORCE_GROUP = "otprange"
 
-ADMIN_ID = 8222394658
+ADMIN_ID = 123456789
 
 OTP_PRICE = 0.30
 
@@ -36,50 +35,13 @@ MIN_WITHDRAW = 150
 
 WITHDRAW_FEE = 10
 
-# =========================
-# MK NETWORK LOGIN
-# =========================
-
-session = requests.Session()
-
-LOGIN_URL = "https://mknetworkbd.com/login.php"
-
-def mk_login():
-
-    data = {
-        "login_id": "playpoinlagbeh@gmail.com",
-        "password": "ENT0SAHID"
-    }
-
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-
-    r = session.post(
-        LOGIN_URL,
-        data=data,
-        headers=headers
-    )
-
-    print("MK Login:", r.status_code)
-    print("Cookies:", session.cookies.get_dict())
-
-mk_login()
 # ================= BOT =================
 
-bot = telebot.TeleBot(BOT_TOKEN, threaded=False)
-
-# ================= WEB SERVER =================
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is running"
+bot = telebot.TeleBot(BOT_TOKEN)
 
 # ================= DATABASE =================
 
-conn = sqlite3.connect("database.db", check_same_thread=False, isolation_level=None)
+conn = sqlite3.connect("database.db", check_same_thread=False)
 
 cursor = conn.cursor()
 
@@ -285,65 +247,43 @@ def ask_range(message):
 
 def get_number(message):
 
-range_id = message.text.strip()
-user_id = message.from_user.id
+    range_id = message.text.strip()
 
-try:
+    user_id = message.from_user.id
 
-    payload = {
-        "range": range_id,
-        "format": "international"
-    }
+    try:
 
-    response = session.post(
-        "https://mknetworkbd.com/api/numbers/get",
-        json=payload,
-        timeout=15
-    )
+        payload = {
+            "range": range_id,
+            "format": "national"
+        }
 
-    print("NEW API RUNNING")
-    print(response.url)
-
-    data = response.json()
-
-    print("GET NUMBER:", data)
-
-    number = data.get("number")
-    number_id = data.get("number_id")
-
-    if not number or not number_id:
-
-        bot.send_message(
-            message.chat.id,
-            f"❌ NO NUMBERS FOUND\n\n{data}"
+        response = requests.post(
+            BASE_URL + "/numbers/get",
+            json=payload,
+            headers=HEADERS
         )
 
-        return
+        data = response.json()
 
-        # ================= COUNTRY =================
+        print("GET NUMBER:", data)
 
-        try:
+        number = data.get("number")
 
-            parsed = phonenumbers.parse(
-                str(number),
-                None
+        if not str(number).startswith("+"):
+
+            number = "+" + str(number)
+
+        number_id = data.get("number_id")
+
+        if not number or not number_id:
+
+            bot.send_message(
+                message.chat.id,
+                f"❌ NO NUMBERS FOUND\n\n{data}"
             )
 
-            country_code = region_code_for_number(parsed)
-
-            country_name = geocoder.description_for_number(
-                parsed,
-                "en"
-            )
-
-            flag = get_flag(country_code)
-
-        except:
-
-            country_name = "Unknown"
-            flag = ""
-
-        # ================= SAVE DB =================
+            return
 
         cursor.execute("""
         UPDATE users
@@ -351,18 +291,9 @@ try:
             current_order_id=?,
             current_range=?
         WHERE user_id=?
-        """, (
-            number,
-            number_id,
-            range_id,
-            user_id
-        ))
+        """, (number, number_id, range_id, user_id))
 
         conn.commit()
-
-        print("ORDER SAVED:", user_id, number_id)
-
-        # ================= BUTTONS =================
 
         markup = types.InlineKeyboardMarkup()
 
@@ -371,6 +302,7 @@ try:
                 "🔄 Change Number",
                 callback_data="change_number"
             ),
+
             types.InlineKeyboardButton(
                 "♻️ Refresh OTP",
                 callback_data="refresh_otp"
@@ -384,8 +316,6 @@ try:
             )
         )
 
-        # ================= SEND =================
-
         bot.send_message(
             message.chat.id,
             f"""
@@ -395,39 +325,24 @@ try:
 
 📶 RANGE: `{range_id}`
 
-🌍 COUNTRY: {flag} {country_name}
-
 💸 OTP নিয়ে পাবেন ০.৩০ টাকা
             """,
             parse_mode="Markdown",
             reply_markup=markup
         )
 
-        # ================= AUTO CHECK OTP =================
-
         threading.Thread(
             target=auto_check_otp,
-            args=(
-                message.chat.id,
-                number_id,
-                range_id,
-                number
-            )
+            args=(message.chat.id, number_id, range_id, number)
         ).start()
 
     except Exception as e:
 
         bot.send_message(
             message.chat.id,
-            f"""
-❌ API OFFLINE
-
-⚠️ Number server বর্তমানে বন্ধ আছে।
-
-ERROR:
-{e}
-            """
+            f"❌ ERROR\n\n{e}"
         )
+
 # ================= AUTO OTP =================
 
 def auto_check_otp(chat_id, number_id, range_id, number):
@@ -436,74 +351,54 @@ def auto_check_otp(chat_id, number_id, range_id, number):
 
         try:
 
-            response = session.get(
-    f"https://mknetworkbd.com/api/numbers/{number_id}/sms",
-    timeout=15
-)
+            response = requests.get(
+                BASE_URL + f"/numbers/{number_id}/sms",
+                headers=HEADERS
+            )
 
             data = response.json()
 
-            print("AUTO OTP RESPONSE:", data)
+            print("OTP:", data)
 
             otp = data.get("otp")
 
             if otp:
 
-                # ================= BALANCE UPDATE =================
-
                 cursor.execute("""
-                    UPDATE users
-                    SET balance = balance + ?,
-                        total_otp = total_otp + 1
-                    WHERE user_id = ?
+                UPDATE users
+                SET balance = balance + ?,
+                    total_otp = total_otp + 1
+                WHERE user_id=?
                 """, (OTP_PRICE, chat_id))
 
                 conn.commit()
 
-
-                # ================= USER INFO =================
-
                 cursor.execute("""
-                    SELECT balance, total_otp, referred_by
-                    FROM users
-                    WHERE user_id = ?
+                SELECT balance,
+                       total_otp,
+                       referred_by
+                FROM users
+                WHERE user_id=?
                 """, (chat_id,))
 
                 info = cursor.fetchone()
 
-                # USER NOT FOUND FIX
-                if not info:
+                current_balance = info[0]
 
-                    cursor.execute("""
-                        INSERT OR IGNORE INTO users (user_id)
-                        VALUES (?)
-                    """, (chat_id,))
+                total_otp = info[1]
 
-                    conn.commit()
-
-                    current_balance = 0
-                    total_otp = 0
-                    referred_by = 0
-
-                else:
-
-                    current_balance = info[0]
-                    total_otp = info[1]
-                    referred_by = info[2]
-                # ================= REFERRAL BONUS =================
+                referred_by = info[2]
 
                 if total_otp == 50 and referred_by != 0:
 
                     cursor.execute("""
-                        UPDATE users
-                        SET balance = balance + ?,
-                            referral_count = referral_count + 1
-                        WHERE user_id = ?
+                    UPDATE users
+                    SET balance = balance + ?,
+                        referral_count = referral_count + 1
+                    WHERE user_id=?
                     """, (REFERRAL_BONUS, referred_by))
 
                     conn.commit()
-
-                # ================= BUTTONS =================
 
                 markup = types.InlineKeyboardMarkup()
 
@@ -523,8 +418,6 @@ def auto_check_otp(chat_id, number_id, range_id, number):
                     )
                 )
 
-                # ================= SEND USER =================
-
                 bot.send_message(
                     chat_id,
                     f"""
@@ -540,17 +433,6 @@ def auto_check_otp(chat_id, number_id, range_id, number):
                     reply_markup=markup
                 )
 
-                # ================= SEND GROUP =================
-
-                group_markup = types.InlineKeyboardMarkup()
-
-                group_markup.row(
-                    types.InlineKeyboardButton(
-                        "📞 Get Number For This Range",
-                        url=f"https://t.me/{bot.get_me().username}?start=range_{range_id}"
-                    )
-                )
-
                 bot.send_message(
                     f"@{FORCE_GROUP}",
                     f"""
@@ -563,19 +445,8 @@ def auto_check_otp(chat_id, number_id, range_id, number):
 📋 OTP: {otp}
 
 💰 Earned: {OTP_PRICE} TK
-                    """,
-                    reply_markup=group_markup
+                    """
                 )
-
-                # ================= CLEAR ACTIVE ORDER =================
-
-                cursor.execute("""
-                    UPDATE users
-                    SET current_order_id = NULL
-                    WHERE user_id = ?
-                """, (chat_id,))
-
-                conn.commit()
 
                 return
 
@@ -583,10 +454,7 @@ def auto_check_otp(chat_id, number_id, range_id, number):
 
         except Exception as e:
 
-            print("AUTO OTP ERROR:", e)
-
-            time.sleep(5)
-
+            print(e)
 
 # ================= REFRESH OTP =================
 
@@ -595,86 +463,56 @@ def refresh_otp(call):
 
     user_id = call.from_user.id
 
+    cursor.execute("""
+    SELECT current_order_id
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    result = cursor.fetchone()
+
+    if not result:
+
+        bot.answer_callback_query(
+            call.id,
+            "❌ No Active Number"
+        )
+
+        return
+
+    number_id = result[0]
+
     try:
 
-        cursor.execute("""
-            SELECT current_order_id
-            FROM users
-            WHERE user_id = ?
-        """, (user_id,))
-
-        result = cursor.fetchone()
-
-        print("DB RESULT:", result)
-
-        # ================= NO ACTIVE =================
-
-        if not result or not result[0]:
-
-            bot.answer_callback_query(
-                call.id,
-                "❌ No Active Number"
-            )
-
-            return
-
-        number_id = result[0]
-
-        print("NUMBER ID:", number_id)
-
-        # ================= REQUEST =================
-
-        response = session.get(
-    f"https://mknetworkbd.com/api/numbers/{number_id}/sms",
-    timeout=15
+        response = requests.get(
+            BASE_URL + f"/numbers/{number_id}/sms",
+            headers=HEADERS
         )
 
         data = response.json()
 
-        print("REFRESH OTP RESPONSE:", data)
-
         otp = data.get("otp")
-
-        # ================= OTP FOUND =================
 
         if otp:
 
-            markup = types.InlineKeyboardMarkup()
-
-            markup.row(
-                types.InlineKeyboardButton(
-                    text=f"📋 COPY OTP : {otp}",
-                    copy_text=types.CopyTextButton(
-                        text=str(otp)
-                    )
-                )
-            )
-
             bot.send_message(
                 call.message.chat.id,
-                f"""
-✅ OTP RECEIVED
-
-📋 OTP: `{otp}`
-                """,
-                parse_mode="Markdown",
-                reply_markup=markup
+                f"✅ OTP\n\n`{otp}`",
+                parse_mode="Markdown"
             )
 
         else:
 
             bot.answer_callback_query(
                 call.id,
-                "⌛ OTP Not Received Yet"
+                "⌛ OTP Not Received"
             )
 
     except Exception as e:
 
-        print("REFRESH OTP ERROR:", e)
-
         bot.send_message(
             call.message.chat.id,
-            f"❌ ERROR\n\n{e}"
+            str(e)
         )
 
 # ================= CHANGE NUMBER =================
@@ -725,137 +563,6 @@ def another_number(call):
     fake.from_user = call.from_user
 
     get_number(fake)
-# ================= ADMIN BROADCAST =================
-
-broadcast_mode = {}
-
-# ===== COMMAND =====
-
-@bot.message_handler(commands=['broadcast'])
-def broadcast_cmd(message):
-
-    if message.from_user.id != ADMIN_ID:
-        return
-
-    broadcast_mode[message.from_user.id] = True
-
-    bot.reply_to(
-        message,
-        "📢 Send Text / Photo / Video"
-    )
-
-# ===== TEXT =====
-
-@bot.message_handler(func=lambda m: m.from_user.id in broadcast_mode and m.content_type == "text")
-def broadcast_text(message):
-
-    if message.text.startswith("/broadcast"):
-        return
-
-    send_all_users(message)
-
-# ===== PHOTO =====
-
-@bot.message_handler(content_types=['photo'])
-def broadcast_photo(message):
-
-    if message.from_user.id in broadcast_mode:
-        send_all_users(message)
-
-# ===== VIDEO =====
-
-@bot.message_handler(content_types=['video'])
-def broadcast_video(message):
-
-    if message.from_user.id in broadcast_mode:
-        send_all_users(message)
-
-# ===== DOCUMENT =====
-
-@bot.message_handler(content_types=['document'])
-def broadcast_document(message):
-
-    if message.from_user.id in broadcast_mode:
-        send_all_users(message)
-
-# ===== SEND FUNCTION =====
-
-def send_all_users(message):
-
-    cursor.execute("""
-    SELECT user_id
-    FROM users
-    """)
-
-    users = cursor.fetchall()
-
-    total = 0
-    failed = 0
-
-    for user in users:
-
-        user_id = user[0]
-
-        try:
-
-            # ===== TEXT =====
-            if message.content_type == "text":
-
-                bot.send_message(
-                    user_id,
-                    message.text
-                )
-
-            # ===== PHOTO =====
-            elif message.content_type == "photo":
-
-                bot.send_photo(
-                    user_id,
-                    message.photo[-1].file_id,
-                    caption=message.caption
-                )
-
-            # ===== VIDEO =====
-            elif message.content_type == "video":
-
-                bot.send_video(
-                    user_id,
-                    message.video.file_id,
-                    caption=message.caption
-                )
-
-            # ===== DOCUMENT =====
-            elif message.content_type == "document":
-
-                bot.send_document(
-                    user_id,
-                    message.document.file_id,
-                    caption=message.caption
-                )
-
-            total += 1
-
-            time.sleep(0.05)
-
-        except Exception as e:
-
-            failed += 1
-
-            print(e)
-
-    broadcast_mode.pop(message.from_user.id, None)
-
-    bot.send_message(
-        message.chat.id,
-        f"""
-✅ Broadcast Completed
-
-👥 Success: {total}
-
-❌ Failed: {failed}
-        """
-    )
-
 
 # ================= PROFILE =================
 
@@ -874,24 +581,11 @@ def profile(message):
 
     data = cursor.fetchone()
 
-    if data is None:
+    balance = data[0]
 
-        cursor.execute("""
-        INSERT INTO users (user_id)
-        VALUES (?)
-        """, (user_id,))
+    total_otp = data[1]
 
-        conn.commit()
-
-        balance = 0
-        total_otp = 0
-        referral_count = 0
-
-    else:
-
-        balance = data[0]
-        total_otp = data[1]
-        referral_count = data[2]
+    referral_count = data[2]
 
     user = message.from_user
 
@@ -913,7 +607,8 @@ def profile(message):
 👥 REFERRALS: {referral_count}
         """
     )
-#===================BALANCE = =================
+
+# ================= BALANCE =================
 
 @bot.message_handler(func=lambda m: m.text == "💰 Balance")
 def balance(message):
@@ -929,22 +624,9 @@ def balance(message):
 
     data = cursor.fetchone()
 
-    if data is None:
+    balance = data[0]
 
-        cursor.execute("""
-        INSERT INTO users (user_id)
-        VALUES (?)
-        """, (user_id,))
-
-        conn.commit()
-
-        balance = 0
-        total_otp = 0
-
-    else:
-
-        balance = data[0]
-        total_otp = data[1]
+    total_otp = data[1]
 
     markup = types.InlineKeyboardMarkup()
 
@@ -969,8 +651,7 @@ def balance(message):
         reply_markup=markup
     )
 
-
-#==================WITHDRAW = =================
+# ================= WITHDRAW =================
 
 @bot.callback_query_handler(func=lambda c: c.data == "withdraw")
 def withdraw(call):
@@ -1096,25 +777,8 @@ def support(message):
         reply_markup=markup
     )
 
-
 # ================= RUN BOT =================
 
-print("BOT RUNNING...")
+print("BOT STARTED")
 
-def start_bot():
-    while True:
-        try:
-            bot.infinity_polling(
-                timeout=30,
-                long_polling_timeout=30,
-                skip_pending=True
-            )
-        except Exception as e:
-            print(e)
-            time.sleep(5)
-
-threading.Thread(target=start_bot).start()
-
-port = int(os.environ.get("PORT", 10000))
-
-app.run(host="0.0.0.0", port=port)
+bot.infinity_polling()
