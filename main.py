@@ -11,7 +11,7 @@ BOT_TOKEN = "YOUR_BOT_TOKEN"
 
 API_KEY = "nxa_d4ec31e0fdf5bd720279be8022ea588b4c2179e9"
 
-BASE_URL = "http://185.190.142.81/api/v1"
+BASE_URL = "http://nexaotpservice.com/api/v1/"
 
 HEADERS = {
     "X-API-Key": API_KEY
