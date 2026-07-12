@@ -38,7 +38,7 @@ WITHDRAW_FEE = 10
 
 # ================= BOT =================
 
-bot = "telebot.TeleBot(BOT_TOKEN)"
+bot = telebot.TeleBot(BOT_TOKEN)
 
 # ================= DATABASE =================
 
