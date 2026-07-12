@@ -9,7 +9,7 @@ import time
 
 BOT_TOKEN = "YOUR_BOT_TOKEN"
 
-API_KEY = "nxa_d4ec31e0fdf5bd720279be8022ea588b4c2179e9"
+API_KEY = "nxa_9f1208cee0f2cd50cdc197bd814eb95e83bc0636"
 
 BASE_URL = "http://nexaotpservice.com/api/v1/"
 
