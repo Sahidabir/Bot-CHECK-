@@ -4,6 +4,7 @@ import requests
 import sqlite3
 import threading
 import time
+import os
 
 # ================= CONFIG =================
 
