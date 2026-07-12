@@ -11,7 +11,7 @@ from telebot import types
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-API_KEY = "YOUR_API_KEY"
+API_KEY = "nxa_9f1208cee0f2cd50cdc197bd814eb95e83bc0636"
 
 BASE_URL = "http://nexaotpservice.com/api/v1"
 
