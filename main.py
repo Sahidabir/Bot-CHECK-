@@ -376,6 +376,32 @@ def get_number(message):
             message.chat.id,
             f"❌ Error\n\n{e}"
         )
+        # ================= AUTO OTP =================
+
+def auto_check_otp(chat_id, number_id, range_id, number):
+    for i in range(60):
+        try:
+            response = requests.get(
+                BASE_URL + f"/numbers/{number_id}/sms",
+                headers=HEADERS,
+                timeout=15
+            )
+
+            data = response.json()
+            print("AUTO OTP:", data)
+
+            otp = data.get("otp")
+
+            if otp:
+                # এখানে balance update, referral bonus,
+                # copy OTP button, group send ইত্যাদির কোড থাকবে।
+                return
+
+            time.sleep(5)
+
+        except Exception as e:
+            print("AUTO OTP ERROR:", e)
+            time.sleep(5)
       # ===== REFERRAL BONUS =====
 
                 if total_otp == 50 and referred_by != 0:
